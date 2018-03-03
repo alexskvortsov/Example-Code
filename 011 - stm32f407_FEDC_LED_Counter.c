@@ -31,13 +31,13 @@ void LEDs_Config(void);
 
 /* Private macro prototypes -----------------------------------------------*/
 uint32_t PortVal = 0;
-uint32_t i_count =0;
+uint32_t i_count = 0;
 
 
 /* Main ---------------------------------------------------------------------*/
 int main (void)
 {
-		//168Mhz
+
 		SysTick_Config(SystemCoreClock/1000);//1 ms	
 		LEDs_Config();
 		
@@ -65,5 +65,5 @@ void LEDs_Config(void)
 	GPIO_Init_LED.GPIO_OType = GPIO_OType_PP;
 	GPIO_Init_LED.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-	GPIO_Init(GPIOD, &GPIO_Init_LED);;
+	GPIO_Init(GPIOD, &GPIO_Init_LED);
 }
