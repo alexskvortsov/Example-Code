@@ -3,11 +3,11 @@
 #include  "stm32f4xx_gpio.h"		
 	
 /* Private define ------------------------------------------------------------*/
-#define RED_ON()				GPIO_SetBits(GPIOG, GPIO_Pin_14)
-#define RED_OFF()				GPIO_ResetBits(GPIOG, GPIO_Pin_14)	
-#define GREEN_ON()			GPIO_SetBits(GPIOG, GPIO_Pin_13)	
-#define GREEN_OFF()			GPIO_ResetBits(GPIOG, GPIO_Pin_13)
-#define RED_Toggle() 		GPIO_ToggleBits(GPIOG, GPIO_Pin_14)
+#define RED_ON()	GPIO_SetBits(GPIOG, GPIO_Pin_14)
+#define RED_OFF()	GPIO_ResetBits(GPIOG, GPIO_Pin_14)	
+#define GREEN_ON()	GPIO_SetBits(GPIOG, GPIO_Pin_13)	
+#define GREEN_OFF()	GPIO_ResetBits(GPIOG, GPIO_Pin_13)
+#define RED_Toggle() 	GPIO_ToggleBits(GPIOG, GPIO_Pin_14)
 #define GREEN_Toggle() 	GPIO_ToggleBits(GPIOG, GPIO_Pin_13)
 
 /* SysTick -----------------------------------------------------------------*/
@@ -15,12 +15,12 @@ uint16_t delay_count = 0;
 
 void SysTick_Handler(void) //1 ms
 {
-if (delay_count > 0) {delay_count--;}
+	if (delay_count > 0) {delay_count--;}
 }
 void delay_ms(uint16_t delay_temp)
 {
-delay_count = delay_temp;
-while(delay_count){}
+	delay_count = delay_temp;
+	while(delay_count){}
 }
 
 /* Private function prototypes -----------------------------------------------*/
@@ -61,19 +61,19 @@ void LEDs_Config(void)
 
 void Led_Toggle(void)
 {
-		RED_Toggle();
-		delay_ms(500);
-	  GREEN_Toggle();
-		delay_ms(500);
+	RED_Toggle();
+	delay_ms(500);
+	GREEN_Toggle();
+	delay_ms(500);
 }
 
 void Led_OnOff(void)
 {
-		RED_ON();
-		GREEN_OFF();
-		delay_ms(500);
-		RED_OFF();
-		GREEN_ON();
-		delay_ms(500);
+	RED_ON();
+	GREEN_OFF();
+	delay_ms(500);
+	RED_OFF();
+	GREEN_ON();
+	delay_ms(500);
 }
 
