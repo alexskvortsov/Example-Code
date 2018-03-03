@@ -1,1 +1,1 @@
-Sample codes for Stm32F429
+Sample codes for STM32F429 and STM32F407
