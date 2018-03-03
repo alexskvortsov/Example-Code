@@ -3,8 +3,8 @@
 #include "stm32f4xx_gpio.h"		
 	
 /* Private define ------------------------------------------------------------*/
-#define RED_ON()				GPIO_SetBits(GPIOG, GPIO_Pin_14)
-#define RED_OFF()				GPIO_ResetBits(GPIOG, GPIO_Pin_14)	
+#define RED_ON()			GPIO_SetBits(GPIOG, GPIO_Pin_14)
+#define RED_OFF()			GPIO_ResetBits(GPIOG, GPIO_Pin_14)	
 #define GREEN_ON()			GPIO_SetBits(GPIOG, GPIO_Pin_13)	
 #define GREEN_OFF()			GPIO_ResetBits(GPIOG, GPIO_Pin_13)
 
