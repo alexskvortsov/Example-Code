@@ -1,0 +1,275 @@
+#ifndef _AT45DBXX_H
+#define _AT45DBXX_H
+
+
+/* ---------------------------------------------------------------------------*/
+/* --------------------
+ * Company             : MyCompany
+ * --------------------
+ * Project Name        : AT45DBXX
+ * Description         : Stm32F764_Spi1
+ * --------------------
+ * Tool Versions       : uVision V5.17.0.0
+ * Target Device       : STM32F764IGT6
+ * --------------------
+ * Engineer            : AlexSkvortsov
+ * Revision            : 1.0
+ * Created Date        : 2018.11.11
+ * --------------------
+ * Engineer            : 
+ * Revision            : 
+ * Modified Date       : 2018.11.29
+ * --------------------
+ * Additional Comments : ....
+ * --------------------
+ *--------------------------------------------------------------------------- */
+
+
+/* --------------------------------------------------------------------------- */
+/* Includes ------------------------------------------------------------------ */
+/* --------------------------------------------------------------------------- */
+#include "stm32f7xx.h"
+
+
+
+/* --------------------------------------------------------------------------- */
+/* Exported types ------------------------------------------------------------ */
+/* --------------------------------------------------------------------------- */
+SPI_HandleTypeDef hspi1;
+
+
+
+/* --------------------------------------------------------------------------- */
+/* Exported constants -------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+#define BUF1_WRITE 				0x84
+#define BUF2_WRITE 				0x87
+#define BUF1_READ 				0xD4
+#define BUF2_READ 				0xD6
+#define BBUF1_TO_MM_PAGE_PROG_WITH_ERASE 	0x83
+#define BBUF2_TO_MM_PAGE_PROG_WITH_ERASE 	0x86
+#define MM_PAGE_TO_B1_XFER 			0x53
+#define MM_PAGE_TO_B2_XFER 			0x55
+#define PAGE_ERASE 				0x81   							// 512/528 bytes per page
+#define SECTOR_ERASE 				0x7C   							// 128k bytes per sector
+#define READ_STATE_REGISTER 			0xD7
+#define Read_ID 				0x9F
+
+
+//Pin CS in AT45DBXX
+#define AT45DBXX_Enable 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET); 	//GPIOA->BSR = GPIO_Pin_4;
+#define AT45DBXX_Disable 			HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);	//GPIOA->BSRR = GPIO_Pin_4;
+
+
+
+/* --------------------------------------------------------------------------- */
+/* Exported functions -------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+void MX_SPI1_Init(void);
+void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi);
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi);
+void CS_SPI1_Init(void);
+
+void AT45DBXX_BUSY(void);
+void AT45DBXX_Read_ID(uint8_t *Data);
+void AT45DBXX_Write(uint16_t BufferOffset,uint8_t Data);
+uint8_t AT45DBXX_Read(uint16_t BufferOffset);
+
+
+
+/* --------------------------------------------------------------------------- */
+/* Exported Config functions ------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+
+										/* SPI1 init function */
+void MX_SPI1_Init(void)
+{
+
+/*
+	SPI1 Main Configuration:
+	------> SPI1
+	------> SPI_MODE_MASTE
+ 	------> SPI_DIRECTION_2LINES
+	------> SPI_DATASIZE_8BIT
+	------>SPI_POLARITY_HIGH
+	------>SPI_PHASE_2EDGE
+	------>SPI_NSS_SOFT
+	------>SPI_BAUDRATEPRESCALER_128
+*/
+
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi1.Init.CRCPolynomial = 7;
+  hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLED;
+  
+  HAL_SPI_Init(&hspi1); 							//Finish Config
+}
+
+
+										/* SPI1 Start */
+void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
+{
+
+  GPIO_InitTypeDef SPI_User_Init;
+  
+  if(hspi->Instance==SPI1)
+  {
+    /* Peripheral clock enable */
+    __SPI1_CLK_ENABLE();
+  
+    /*
+	SPI1 GPIO Configuration:    
+    	PA5     ------> SPI1_SCK
+    	PA6     ------> SPI1_MISO
+    	PA7     ------> SPI1_MOSI 
+    */
+    SPI_User_Init.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+    SPI_User_Init.Mode = GPIO_MODE_AF_PP;
+    SPI_User_Init.Pull = GPIO_NOPULL;
+    SPI_User_Init.Speed = GPIO_SPEED_HIGH;
+    SPI_User_Init.Alternate = GPIO_AF5_SPI1;
+    HAL_GPIO_Init(GPIOA, &SPI_User_Init);
+  }
+}
+
+
+										/* SPI1 Stop  */
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
+{
+  if(hspi->Instance==SPI1)
+  {
+    /* Peripheral clock disable */
+    __SPI1_CLK_DISABLE();
+  
+    /**SPI1 GPIO Configuration    
+    PA5     ------> SPI1_SCK
+    PA6     ------> SPI1_MISO
+    PA7     ------> SPI1_MOSI 
+    */
+    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7);
+  }
+}
+
+
+/* --------------------------------------------------------------------------- */
+/* Configuration ------------------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+										/* Configuration function - CS for SPI1*/
+
+void CS_SPI1_Init(void)
+{
+  GPIO_InitTypeDef GPIO_CS_Init;
+
+  /* GPIO Ports Clock Enable */
+  __GPIOA_CLK_ENABLE();
+
+  /*Configure GPIO pin : PA4 */
+  GPIO_CS_Init.Pin = GPIO_PIN_4;
+  GPIO_CS_Init.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_CS_Init.Pull = GPIO_PULLUP;
+  GPIO_CS_Init.Speed = GPIO_SPEED_LOW;
+  HAL_GPIO_Init(GPIOA, &G GPIO_CS_Init);
+}
+
+/* --------------------------------------------------------------------------- */
+/* Main Funcion AT45DBXX ----------------------------------------------------- */
+/* --------------------------------------------------------------------------- */
+
+/*
+ * --------------------
+ * Engineer 		: AlexSkvortsov
+ * --------------------
+ * Modified Date	: 2018.11.20
+ * --------------------
+*/
+										/* Command BUSY in AT45DBXX */
+static void AT45DBXX_BUSY(void)
+{
+	uint8_t status;
+	
+	AT45DBXX_Disable;	
+	uint8_t cmd[1];
+	
+	cmd[0] = READ_STATE_REGISTER;
+	do
+	{
+	AT45DBXX_Enable;
+		HAL_SPI_Transmit(&hspi1, cmd, 1, 1000);	
+		HAL_SPI_Receive(&hspi1,&status, 1, 1000);
+	AT45DBXX_Disable;
+	}while(!(status & 0x80));
+}
+
+										/* Command Read ID in AT45DBXX */
+void AT45DBXX_Read_ID(uint8_t *ID)
+{
+	uint8_t cmd[1];
+	cmd[0] = Read_ID;
+	
+	AT45DBXX_BUSY();
+	AT45DBXX_Enable;
+	HAL_SPI_Transmit(&hspi1, cmd, 1, 1000);	
+	HAL_SPI_Receive(&hspi1,ID, 4, 1000);
+	AT45DBXX_Disable;
+}
+
+/*
+ * --------------------
+ * Engineer 		: AlexSkvortsov
+ * --------------------
+ * Modified Date	: 2018.11.20
+ * --------------------
+*/
+										/* Command Write in AT45DBXX */
+void AT45DBXX_Write(uint16_t BufferOffset,uint8_t Data)
+{		
+	uint8_t cmd[4];
+
+	AT45DBXX_Enable;	
+	cmd[0] = BUF1_WRITE;
+	cmd[1] = 0xFF;
+	cmd[2] = (uint8_t)(BufferOffset>>8);
+	cmd[3] = (uint8_t)BufferOffset;
+	cmd[3] = Data;
+
+	AT45DBXX_Enable;
+	HAL_SPI_Transmit(&hspi1, cmd, 5, 1000);	
+	AT45DBXX_Disable;
+}
+
+/*
+ * --------------------
+ * Engineer 		: AlexSkvortsov
+ * --------------------
+ * Modified Date	: 2018.11.21
+ * --------------------
+*/
+										/* Command Read Data in AT45DBXX */
+uint8_t AT45DBXX_Read(uint16_t BufferOffset)
+{		
+	uint8_t cmd[5];
+	cmd[0] = BUF1_READ;
+	cmd[1] = 0xFF;
+	cmd[2] = (uint8_t)BufferOffset>>8;
+	cmd[3] = (uint8_t)BufferOffset;
+	cmd[4] = 0xFF;
+	
+	AT45DBXX_Enable;
+	HAL_SPI_Transmit(&hspi1, cmd, 5, 1000);
+	HAL_SPI_Receive(&hspi1, cmd, 1, 1000);
+	AT45DBXX_Disable;
+	return cmd[0];	
+}
+
+
+#endif /*_AT45DBXX_H*/
