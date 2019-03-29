@@ -36,8 +36,7 @@
 /* --------------------------------------------------------------------------- */
 CAN_FilterConfTypeDef  	      sFilterConfig;
 static CanTxMsgTypeDef        TxMessage;
-s
-tatic CanRxMsgTypeDef        RxMessage;
+static CanRxMsgTypeDef        RxMessage;
 
 
 
